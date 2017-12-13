@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- 配置Controller扫描 -->
+	<context:component-scan base-package="cn.loverqi.lease.controller" />
+
+	<mvc:cors>
+		<mvc:mapping path="/**" />
+	</mvc:cors>
+
+	<!-- 配置注解驱动 -->
+	<mvc:annotation-driven conversion-service="conversionServiceFactoryBean">
+		<!-- 处理responseBody 里面日期类型 -->
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="objectMapper">
+					<bean class="com.fasterxml.jackson.databind.ObjectMapper">
+						<property name="dateFormat">
+							<bean class="java.text.SimpleDateFormat">
+								<constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss" />
+							</bean>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!-- 日期统一转换 -->
+	<bean id="conversionServiceFactoryBean"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<list>
+				<bean class="cn.loverqi.lease.conversion.DateConveter">
+					<property name="datePattern" value="yyyy-MM-dd HH:mm:ss" />
+				</bean>
+				<bean class="cn.loverqi.lease.conversion.IntegerConveter" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 全局异常处理 -->
+	<!-- <bean class="cn.loverqi.lease.exception.ExceptionResolver" /> -->
+
+	<!-- 的拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<!-- 登陆验证的拦截器类 -->
+			<bean class="cn.loverqi.lease.interceptor.LoginInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<!-- 权限认证的拦截器类 -->
+			<bean class="cn.loverqi.lease.interceptor.PermissionsLoginInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+</beans>
+	
